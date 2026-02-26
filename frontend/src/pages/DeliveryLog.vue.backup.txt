@@ -1,0 +1,937 @@
+<template>
+	<div class="page">
+		<header class="header">
+			<button class="back-btn" @click="router.push('/dashboard')">← Back</button>
+			<h2>{{ showForm ? "Log Delivery" : "My Deliveries" }}</h2>
+			<div style="width: 60px"></div>
+		</header>
+
+		<!-- LIST VIEW -->
+		<div v-if="!showForm">
+			<div class="tabs">
+				<button
+					:class="['tab', activeTab === 'pending' ? 'tab-active' : '']"
+					@click="activeTab = 'pending'"
+				>
+					Pending
+					<span class="tab-count" v-if="pendingChallans.length > 0">{{
+						pendingChallans.length
+					}}</span>
+				</button>
+				<button
+					:class="['tab', activeTab === 'done' ? 'tab-active' : '']"
+					@click="activeTab = 'done'"
+				>
+					Completed
+				</button>
+			</div>
+
+			<div class="list">
+				<div v-if="loading" class="empty-state">
+					<div class="dot-pulse"><span></span><span></span><span></span></div>
+				</div>
+
+				<!-- Offline Banner -->
+				<div v-if="isOffline" class="offline-banner">
+					📵 You're offline — deliveries will sync when back online
+				</div>
+
+				<!-- Pending Sync Banner -->
+				<div
+					v-if="pendingSync.length > 0 && !isOffline"
+					class="sync-banner"
+					@click="syncOfflineData"
+				>
+					🔄 {{ pendingSync.length }} offline log(s) ready to sync — Tap to sync now
+				</div>
+
+				<template v-else-if="!loading">
+					<!-- Pending Tab -->
+					<template v-if="activeTab === 'pending'">
+						<div v-if="pendingChallans.length === 0" class="empty-state">
+							<div class="empty-icon">🚚</div>
+							<p class="empty-text">No dispatched challans assigned to you</p>
+						</div>
+						<div
+							class="challan-card"
+							v-else
+							v-for="c in pendingChallans"
+							:key="c.name"
+							@click="openForm(c)"
+						>
+							<div class="card-accent"></div>
+							<div class="card-inner">
+								<div class="card-top">
+									<span class="card-id">{{ c.name }}</span>
+									<span class="badge badge-dispatched">Dispatched</span>
+								</div>
+								<div class="card-details">
+									<div class="detail-item">🚗 {{ c.vehicle || "—" }}</div>
+									<div class="detail-item">
+										🏢 {{ getCenterCount(c) }} centers
+									</div>
+								</div>
+								<div class="card-footer">
+									<span class="card-date">{{ formatDate(c.creation) }}</span>
+									<span class="tap-hint">Tap to log →</span>
+								</div>
+							</div>
+						</div>
+					</template>
+
+					<!-- Done Tab -->
+					<template v-else>
+						<div v-if="completedLogs.length === 0" class="empty-state">
+							<div class="empty-icon">📦</div>
+							<p class="empty-text">No completed deliveries yet</p>
+						</div>
+						<div
+							class="challan-card done-card"
+							v-else
+							v-for="log in completedLogs"
+							:key="log.name"
+						>
+							<div class="card-accent accent-done"></div>
+							<div class="card-inner">
+								<div class="card-top">
+									<span class="card-id">{{ log.challan_ref }}</span>
+									<span class="badge badge-done">Logged</span>
+								</div>
+								<div class="card-details">
+									<div class="detail-item">📋 {{ log.name }}</div>
+								</div>
+								<div class="card-footer">
+									<span class="card-date">{{ formatDate(log.creation) }}</span>
+									<span v-if="log._offline" class="offline-tag">📵 Offline</span>
+								</div>
+							</div>
+						</div>
+					</template>
+				</template>
+			</div>
+		</div>
+
+		<!-- DELIVERY FORM -->
+		<div v-if="showForm" class="form-view">
+			<!-- Challan Preview -->
+			<div class="challan-preview">
+				<div class="preview-label">Logging Delivery For</div>
+				<div class="preview-id">{{ selectedChallan.name }}</div>
+				<div class="preview-divider"></div>
+				<div class="preview-grid">
+					<div class="preview-item">
+						<span class="preview-key">Vehicle</span>
+						<span class="preview-val">{{ selectedChallan.vehicle || "—" }}</span>
+					</div>
+					<div class="preview-item">
+						<span class="preview-key">Centers</span>
+						<span class="preview-val">{{ deliveryForm.length }} stops</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- Offline indicator -->
+			<div v-if="isOffline" class="offline-banner">
+				📵 Offline mode — will save locally and sync later
+			</div>
+
+			<!-- Center Delivery Cards -->
+			<div class="form-section" v-if="deliveryForm.length > 0">
+				<div class="section-title">🏢 Center Deliveries</div>
+
+				<div
+					class="center-card"
+					v-for="(center, i) in deliveryForm"
+					:key="i"
+					:class="{ 'center-done': center.delivered }"
+				>
+					<div class="center-header">
+						<div class="center-num">Stop {{ i + 1 }}</div>
+						<div class="center-check" :class="{ checked: center.delivered }">
+							{{ center.delivered ? "✅" : "⏳" }}
+						</div>
+					</div>
+					<div class="center-name">{{ center.center }}</div>
+
+					<div class="center-fields">
+						<div class="field-group">
+							<label>Arrival Time</label>
+							<input
+								v-model="center.arrival_time"
+								type="datetime-local"
+								class="field-input"
+								@change="checkDelivered(center)"
+							/>
+						</div>
+						<div class="field-group">
+							<label>Delivered Qty</label>
+							<input
+								v-model="center.delivered_qty"
+								type="number"
+								class="field-input"
+								placeholder="0"
+								@input="checkDelivered(center)"
+							/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div v-else class="form-section">
+				<div class="empty-table">No centers found in this challan</div>
+			</div>
+
+			<!-- Progress -->
+			<div class="progress-section">
+				<div class="progress-bar-wrap">
+					<div class="progress-bar" :style="{ width: progressPercent + '%' }"></div>
+				</div>
+				<div class="progress-text">
+					{{ deliveredCount }}/{{ deliveryForm.length }} centers logged
+				</div>
+			</div>
+
+			<p v-if="saveError" class="error-msg">⚠️ {{ saveError }}</p>
+			<p v-if="saveSuccess" class="success-msg">✅ {{ saveSuccess }}</p>
+
+			<div class="form-actions">
+				<button class="cancel-btn" @click="showForm = false">Cancel</button>
+				<button
+					class="save-btn"
+					@click="saveDeliveryLog"
+					:disabled="saving || deliveredCount === 0"
+				>
+					<span v-if="saving" class="btn-spinner"></span>
+					<span v-else>{{ isOffline ? "💾 Save Offline" : "💾 Save Log" }}</span>
+				</button>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useRouter } from "vue-router";
+import { apiGet, apiPost, listUrl } from "../utils/api.js";
+import { useAuthStore } from "../composables/useAuth";
+
+const router = useRouter();
+const auth = useAuthStore();
+const loading = ref(true);
+const showForm = ref(false);
+const saving = ref(false);
+const saveError = ref("");
+const saveSuccess = ref("");
+const activeTab = ref("pending");
+const pendingChallans = ref([]);
+const completedLogs = ref([]);
+const selectedChallan = ref({});
+const deliveryForm = ref([]);
+const isOffline = ref(!navigator.onLine);
+const pendingSync = ref([]);
+
+// --- Offline detection ---
+function handleOnline() {
+	isOffline.value = false;
+	loadPendingSync();
+}
+function handleOffline() {
+	isOffline.value = true;
+}
+
+// --- Offline storage helpers ---
+const OFFLINE_KEY = "tsf_delivery_offline";
+
+function loadPendingSync() {
+	try {
+		const raw = localStorage.getItem(OFFLINE_KEY);
+		pendingSync.value = raw ? JSON.parse(raw) : [];
+	} catch {
+		pendingSync.value = [];
+	}
+}
+
+function saveToOffline(payload) {
+	try {
+		const existing = JSON.parse(localStorage.getItem(OFFLINE_KEY) || "[]");
+		existing.push({ ...payload, _savedAt: new Date().toISOString() });
+		localStorage.setItem(OFFLINE_KEY, JSON.stringify(existing));
+		pendingSync.value = existing;
+	} catch (e) {
+		console.error("Offline save failed", e);
+	}
+}
+
+function clearOfflineItem(index) {
+	try {
+		const existing = JSON.parse(localStorage.getItem(OFFLINE_KEY) || "[]");
+		existing.splice(index, 1);
+		localStorage.setItem(OFFLINE_KEY, JSON.stringify(existing));
+		pendingSync.value = existing;
+	} catch (e) {
+		console.error(e);
+	}
+}
+
+async function syncOfflineData() {
+	if (isOffline.value || pendingSync.value.length === 0) return;
+	let synced = 0;
+	const toSync = [...pendingSync.value];
+
+	for (let i = 0; i < toSync.length; i++) {
+		const item = toSync[i];
+		try {
+			const res = await apiPost("/api/resource/TSF Delivery Log", item);
+			if (res.data) {
+				clearOfflineItem(0);
+				synced++;
+			}
+		} catch (e) {
+			console.error("Sync failed for item", i, e);
+		}
+	}
+
+	if (synced > 0) {
+		saveSuccess.value = `${synced} offline log(s) synced successfully!`;
+		await fetchData();
+		setTimeout(() => (saveSuccess.value = ""), 3000);
+	}
+}
+
+// --- Helpers ---
+function formatDate(d) {
+	if (!d) return "";
+	return new Date(d).toLocaleDateString("en-IN", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+	});
+}
+
+function getCenterCount(challan) {
+	return challan.center_list?.length || 0;
+}
+
+const deliveredCount = computed(() => deliveryForm.value.filter((c) => c.delivered).length);
+
+const progressPercent = computed(() =>
+	deliveryForm.value.length > 0 ? (deliveredCount.value / deliveryForm.value.length) * 100 : 0,
+);
+
+function checkDelivered(center) {
+	center.delivered = !!(center.arrival_time && center.delivered_qty > 0);
+}
+
+// --- Open Form ---
+async function openForm(challan) {
+	selectedChallan.value = challan;
+	saveError.value = "";
+	saveSuccess.value = "";
+
+	// Load full challan to get center_list
+	try {
+		const res = await apiGet(`/api/resource/TSF Dispatch Challan/${challan.name}`);
+		const full = res.data || {};
+		const centers = full.center_list || [];
+		const now = new Date();
+		const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+			.toISOString()
+			.slice(0, 16);
+
+		deliveryForm.value = centers.map((c) => ({
+			center: c.name1 || c.center_name || c.name || "—",
+			arrival_time: localNow,
+			delivered_qty: c.delivered_qty || 0,
+			delivered: false,
+		}));
+
+		// Mark as delivered if qty > 0
+		deliveryForm.value.forEach((c) => checkDelivered(c));
+	} catch (e) {
+		deliveryForm.value = [];
+		console.error(e);
+	}
+
+	showForm.value = true;
+}
+
+// --- Fetch Data ---
+async function fetchData() {
+	loading.value = true;
+	try {
+		// Get current user's driver record
+		const driverRes = await apiGet(
+			listUrl("TSF Driver", ["name", "driver_name", "user"], [["user", "=", auth.user]]),
+		);
+		const driverName = driverRes.data?.[0]?.name || null;
+
+		// Get dispatched challans for this driver
+		const filters = driverName
+			? [
+					["workflow_state", "=", "Dispatched"],
+					["driver", "=", driverName],
+				]
+			: [["workflow_state", "=", "Dispatched"]];
+
+		const [challanRes, logRes] = await Promise.all([
+			apiGet(
+				listUrl(
+					"TSF Dispatch Challan",
+					["name", "vehicle", "driver", "workflow_state", "creation", "center_list"],
+					filters,
+				),
+			),
+			apiGet(listUrl("TSF Delivery Log", ["name", "challan_ref", "creation"], [], 50)),
+		]);
+
+		pendingChallans.value = challanRes.data || [];
+		completedLogs.value = logRes.data || [];
+
+		// Add any offline saved logs to completed tab
+		const offline = JSON.parse(localStorage.getItem(OFFLINE_KEY) || "[]");
+		offline.forEach((o) => {
+			completedLogs.value.unshift({
+				name: "Offline",
+				challan_ref: o.challan_ref,
+				creation: o._savedAt,
+				_offline: true,
+			});
+		});
+	} catch (e) {
+		console.error(e);
+	}
+	loading.value = false;
+}
+
+// --- Save ---
+async function saveDeliveryLog() {
+	if (deliveredCount.value === 0) {
+		saveError.value = "Please fill at least one center delivery.";
+		return;
+	}
+	saving.value = true;
+	saveError.value = "";
+	saveSuccess.value = "";
+
+	const payload = {
+		doctype: "TSF Delivery Log",
+		challan_ref: selectedChallan.value.name,
+		delivery_info: deliveryForm.value.map((c) => ({
+			doctype: "TSF Delivery Log Item Table",
+			center: c.center,
+			arrival_time: c.arrival_time,
+			delivered_qty: parseInt(c.delivered_qty) || 0,
+		})),
+	};
+
+	if (isOffline.value) {
+		saveToOffline(payload);
+		saveSuccess.value = "Saved offline! Will sync when back online.";
+		setTimeout(() => {
+			showForm.value = false;
+			fetchData();
+		}, 1800);
+		saving.value = false;
+		return;
+	}
+
+	try {
+		const res = await apiPost("/api/resource/TSF Delivery Log", payload);
+		if (res.data) {
+			saveSuccess.value = "Delivery log saved successfully!";
+			setTimeout(() => {
+				showForm.value = false;
+				fetchData();
+			}, 1800);
+		} else {
+			saveError.value = res.exception || res._server_messages || "Failed to save.";
+			console.error(res);
+		}
+	} catch (e) {
+		// Network error - save offline
+		saveToOffline(payload);
+		saveSuccess.value = "Network error — saved offline. Will sync later.";
+		setTimeout(() => {
+			showForm.value = false;
+			fetchData();
+		}, 1800);
+	}
+	saving.value = false;
+}
+
+onMounted(() => {
+	window.addEventListener("online", handleOnline);
+	window.addEventListener("offline", handleOffline);
+	loadPendingSync();
+	fetchData();
+});
+
+onUnmounted(() => {
+	window.removeEventListener("online", handleOnline);
+	window.removeEventListener("offline", handleOffline);
+});
+</script>
+
+<style scoped>
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap");
+* {
+	font-family: "DM Sans", sans-serif;
+}
+.page {
+	min-height: 100vh;
+	background: #f4f6f4;
+	padding-bottom: 2rem;
+}
+.header {
+	background: #1a4a1e;
+	color: white;
+	padding: 1rem 1.1rem;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: sticky;
+	top: 0;
+	z-index: 10;
+}
+.header h2 {
+	font-size: 1rem;
+	font-weight: 700;
+}
+.back-btn {
+	background: rgba(255, 255, 255, 0.1);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: white;
+	padding: 0.4rem 0.75rem;
+	border-radius: 20px;
+	cursor: pointer;
+	font-size: 0.82rem;
+}
+
+/* Tabs */
+.tabs {
+	display: flex;
+	background: white;
+	border-bottom: 2px solid #f0f0f0;
+}
+.tab {
+	flex: 1;
+	padding: 0.85rem;
+	border: none;
+	background: transparent;
+	font-size: 0.88rem;
+	color: #aaa;
+	cursor: pointer;
+	font-weight: 600;
+	transition: color 0.2s;
+}
+.tab-active {
+	color: #2e7d32;
+	border-bottom: 2.5px solid #2e7d32;
+	margin-bottom: -2px;
+}
+.tab-count {
+	background: #e65100;
+	color: white;
+	border-radius: 20px;
+	padding: 0.1rem 0.5rem;
+	font-size: 0.7rem;
+	margin-left: 0.35rem;
+}
+
+/* List */
+.list {
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.65rem;
+}
+.empty-state {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 4rem 1rem;
+	gap: 0.75rem;
+}
+.empty-icon {
+	font-size: 3rem;
+}
+.empty-text {
+	color: #aaa;
+	font-size: 0.88rem;
+	text-align: center;
+}
+.dot-pulse {
+	display: flex;
+	gap: 0.4rem;
+}
+.dot-pulse span {
+	width: 9px;
+	height: 9px;
+	background: #2e7d32;
+	border-radius: 50%;
+	animation: pulse 1.2s ease-in-out infinite;
+}
+.dot-pulse span:nth-child(2) {
+	animation-delay: 0.2s;
+}
+.dot-pulse span:nth-child(3) {
+	animation-delay: 0.4s;
+}
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 0.3;
+		transform: scale(0.8);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+/* Banners */
+.offline-banner {
+	background: #fff3e0;
+	color: #e65100;
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	text-align: center;
+}
+.sync-banner {
+	background: #e3f2fd;
+	color: #1565c0;
+	padding: 0.75rem 1rem;
+	border-radius: 12px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	text-align: center;
+	cursor: pointer;
+}
+.offline-tag {
+	font-size: 0.7rem;
+	color: #e65100;
+	font-weight: 700;
+}
+
+/* Cards */
+.challan-card {
+	background: white;
+	border-radius: 16px;
+	overflow: hidden;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+	cursor: pointer;
+	display: flex;
+	transition: transform 0.15s;
+}
+.challan-card:active {
+	transform: scale(0.98);
+}
+.done-card {
+	opacity: 0.75;
+	cursor: default;
+}
+.card-accent {
+	width: 4px;
+	flex-shrink: 0;
+	background: #6a1b9a;
+}
+.accent-done {
+	background: #2e7d32;
+}
+.card-inner {
+	flex: 1;
+	padding: 0.9rem 1rem;
+}
+.card-top {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.5rem;
+}
+.card-id {
+	font-weight: 700;
+	font-size: 0.88rem;
+	color: #1a1a1a;
+	font-family: "DM Mono", monospace;
+}
+.card-details {
+	display: flex;
+	gap: 1rem;
+	margin-bottom: 0.5rem;
+}
+.detail-item {
+	font-size: 0.8rem;
+	color: #666;
+}
+.card-footer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+.card-date {
+	font-size: 0.72rem;
+	color: #bbb;
+	font-family: "DM Mono", monospace;
+}
+.tap-hint {
+	font-size: 0.72rem;
+	color: #6a1b9a;
+	font-weight: 700;
+}
+.badge {
+	padding: 0.2rem 0.6rem;
+	border-radius: 20px;
+	font-size: 0.68rem;
+	font-weight: 700;
+}
+.badge-dispatched {
+	background: #f3e5f5;
+	color: #6a1b9a;
+}
+.badge-done {
+	background: #e8f5e9;
+	color: #2e7d32;
+}
+
+/* Form */
+.form-view {
+	padding: 1rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.85rem;
+}
+.challan-preview {
+	background: #1a4a1e;
+	border-radius: 16px;
+	padding: 1.1rem;
+}
+.preview-label {
+	font-size: 0.68rem;
+	color: rgba(255, 255, 255, 0.5);
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	margin-bottom: 0.3rem;
+}
+.preview-id {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: white;
+	font-family: "DM Mono", monospace;
+	margin-bottom: 0.85rem;
+}
+.preview-divider {
+	height: 1px;
+	background: rgba(255, 255, 255, 0.12);
+	margin-bottom: 0.85rem;
+}
+.preview-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.5rem;
+}
+.preview-item {
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+.preview-key {
+	font-size: 0.65rem;
+	color: rgba(255, 255, 255, 0.45);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.preview-val {
+	font-size: 0.85rem;
+	color: rgba(255, 255, 255, 0.9);
+	font-weight: 600;
+}
+
+/* Center Cards */
+.form-section {
+	background: white;
+	border-radius: 16px;
+	padding: 1rem;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.section-title {
+	font-size: 0.82rem;
+	font-weight: 700;
+	color: #2e7d32;
+	margin-bottom: 0.85rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.center-card {
+	border: 1.5px solid #ebebeb;
+	border-radius: 12px;
+	padding: 0.9rem;
+	margin-bottom: 0.65rem;
+	transition:
+		border-color 0.2s,
+		background 0.2s;
+}
+.center-card.center-done {
+	border-color: #a5d6a7;
+	background: #f9fdf9;
+}
+.center-card:last-child {
+	margin-bottom: 0;
+}
+.center-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.3rem;
+}
+.center-num {
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: #aaa;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+.center-check {
+	font-size: 1rem;
+	transition: transform 0.3s;
+}
+.center-check.checked {
+	transform: scale(1.2);
+}
+.center-name {
+	font-size: 0.95rem;
+	font-weight: 700;
+	color: #1a1a1a;
+	margin-bottom: 0.75rem;
+}
+.center-fields {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0.65rem;
+}
+.field-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.3rem;
+}
+label {
+	font-size: 0.68rem;
+	font-weight: 700;
+	color: #888;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+.field-input {
+	padding: 0.65rem 0.75rem;
+	border: 1.5px solid #ebebeb;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	background: #fafafa;
+	outline: none;
+	width: 100%;
+	transition: border 0.2s;
+	font-family: "DM Sans", sans-serif;
+}
+.field-input:focus {
+	border-color: #2e7d32;
+	background: white;
+}
+.empty-table {
+	text-align: center;
+	padding: 1.5rem;
+	color: #ccc;
+	font-size: 0.85rem;
+}
+
+/* Progress */
+.progress-section {
+	background: white;
+	border-radius: 16px;
+	padding: 1rem;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+.progress-bar-wrap {
+	background: #f0f0f0;
+	border-radius: 10px;
+	height: 8px;
+	overflow: hidden;
+	margin-bottom: 0.5rem;
+}
+.progress-bar {
+	background: linear-gradient(90deg, #2e7d32, #66bb6a);
+	height: 100%;
+	border-radius: 10px;
+	transition: width 0.4s ease;
+}
+.progress-text {
+	font-size: 0.78rem;
+	color: #888;
+	font-weight: 600;
+	text-align: right;
+}
+
+/* Actions */
+.form-actions {
+	display: flex;
+	gap: 0.65rem;
+	padding-bottom: 0.5rem;
+}
+.cancel-btn {
+	flex: 1;
+	padding: 0.9rem;
+	background: white;
+	border: 1.5px solid #e8e8e8;
+	border-radius: 14px;
+	cursor: pointer;
+	font-size: 0.92rem;
+	color: #666;
+	font-weight: 600;
+}
+.save-btn {
+	flex: 2;
+	padding: 0.9rem;
+	background: #1a4a1e;
+	color: white;
+	border: none;
+	border-radius: 14px;
+	cursor: pointer;
+	font-size: 0.92rem;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+}
+.save-btn:disabled {
+	opacity: 0.5;
+}
+.btn-spinner {
+	width: 18px;
+	height: 18px;
+	border: 2.5px solid rgba(255, 255, 255, 0.3);
+	border-top-color: white;
+	border-radius: 50%;
+	animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+.error-msg {
+	color: #c62828;
+	font-size: 0.82rem;
+	background: #ffebee;
+	padding: 0.75rem 1rem;
+	border-radius: 10px;
+}
+.success-msg {
+	color: #2e7d32;
+	font-size: 0.82rem;
+	background: #e8f5e9;
+	padding: 0.75rem 1rem;
+	border-radius: 10px;
+}
+</style>

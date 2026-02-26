@@ -1,0 +1,77 @@
+{
+ "add_total_row": 0,
+ "add_translate_data": 0,
+ "columns": [
+  {
+   "fieldname": "shelter",
+   "fieldtype": "Link",
+   "label": "Shelter",
+   "options": "Ren Basera",
+   "width": 0
+  },
+  {
+   "fieldname": "date",
+   "fieldtype": "Link",
+   "label": "Date",
+   "options": "Bed Allotment",
+   "width": 0
+  }
+ ],
+ "creation": "2026-02-06 12:04:55.400230",
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City",
+   "mandatory": 0,
+   "options": "",
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "shelter",
+   "fieldtype": "Link",
+   "label": "Shelter",
+   "mandatory": 0,
+   "options": "Ren Basera",
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "from_date",
+   "fieldtype": "Date",
+   "label": "From Date",
+   "mandatory": 0,
+   "wildcard_filter": 0
+  },
+  {
+   "fieldname": "to_date",
+   "fieldtype": "Date",
+   "label": "To Date",
+   "mandatory": 0,
+   "wildcard_filter": 0
+  }
+ ],
+ "idx": 3,
+ "is_standard": "Yes",
+ "letter_head": null,
+ "modified": "2026-02-16 16:42:48.542126",
+ "modified_by": "Administrator",
+ "module": "Intern Test",
+ "name": "Bed Availability",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Bed Allotment",
+ "report_name": "Bed Availability",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "operator Ren basera"
+  }
+ ],
+ "timeout": 0
+}

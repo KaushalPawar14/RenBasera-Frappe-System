@@ -1,0 +1,79 @@
+{
+ "actions": [],
+ "autoname": "BED.-.YY.#####",
+ "creation": "2026-01-29 11:33:17.384494",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "shelter",
+  "bed_number",
+  "status",
+  "floor",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "shelter",
+   "fieldtype": "Link",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Shelter",
+   "options": "Ren Basera"
+  },
+  {
+   "fieldname": "bed_number",
+   "fieldtype": "Data",
+   "label": "Bed Number"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_filter": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Available\nOccupied\nCancelled"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "floor",
+   "fieldtype": "Select",
+   "label": "Floor",
+   "options": "0\n1\n2\n3\n4\n5"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-02-16 18:04:00.220107",
+ "modified_by": "akashtomar8811@gmail.com",
+ "module": "Intern Test",
+ "name": "Bed",
+ "naming_rule": "Expression",
+ "owner": "kaushalapawar@gmail.com",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "bed_number"
+}

@@ -1,0 +1,163 @@
+{
+ "actions": [],
+ "autoname": "BA.-.MM.-.YY.#####",
+ "creation": "2026-01-29 11:35:40.321553",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "shelter",
+  "serial_number",
+  "patient_name",
+  "case_number",
+  "no_of_relatives",
+  "total_amount",
+  "area",
+  "address",
+  "column_break_esty",
+  "creation_time",
+  "check_out_time",
+  "created_by_operator",
+  "checkout_by",
+  "check_out_date",
+  "check_in_date",
+  "payment_method",
+  "section_break_tybv",
+  "guest"
+ ],
+ "fields": [
+  {
+   "fieldname": "shelter",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Shelter",
+   "options": "Ren Basera",
+   "reqd": 1
+  },
+  {
+   "fieldname": "serial_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Serial Number"
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Patient Name"
+  },
+  {
+   "fieldname": "case_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Case Number"
+  },
+  {
+   "fieldname": "area",
+   "fieldtype": "Data",
+   "label": "Area"
+  },
+  {
+   "fieldname": "check_out_time",
+   "fieldtype": "Datetime",
+   "label": "Check Out Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_by_operator",
+   "fieldtype": "Link",
+   "label": "Created By Operator",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "checkout_by",
+   "fieldtype": "Link",
+   "label": "Checkout By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_esty",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_tybv",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "no_of_relatives",
+   "fieldtype": "Int",
+   "label": "No. of Relatives",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Int",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "guest",
+   "fieldtype": "Table",
+   "label": "Guest",
+   "options": "Relatives",
+   "reqd": 1
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "creation_time",
+   "fieldtype": "Datetime",
+   "label": "Creation Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "check_out_date",
+   "fieldtype": "Date",
+   "label": "Check Out Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "check_in_date",
+   "fieldtype": "Date",
+   "label": "Check In Date"
+  },
+  {
+   "fieldname": "payment_method",
+   "fieldtype": "Select",
+   "label": "Payment Method",
+   "options": "Cash\nOnline"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-02-16 17:37:29.456098",
+ "modified_by": "talaviyautsav2005@gmail.com",
+ "module": "Intern Test",
+ "name": "Bed Allotment",
+ "naming_rule": "Expression",
+ "owner": "talaviyautsav2005@gmail.com",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

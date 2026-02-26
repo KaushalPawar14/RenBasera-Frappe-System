@@ -1,0 +1,92 @@
+{
+ "actions": [],
+ "autoname": "DC.-.RB.-.YY.####",
+ "creation": "2026-02-05 11:01:38.768524",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "total_amount",
+  "online_amount",
+  "cash_amount",
+  "column_break_gctn",
+  "user",
+  "closing_time",
+  "section_break_gshj",
+  "bed_allotment"
+ ],
+ "fields": [
+  {
+   "fieldname": "total_amount",
+   "fieldtype": "Currency",
+   "label": "Total Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "closing_time",
+   "fieldtype": "Datetime",
+   "label": "Closing Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "Operator",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_gctn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_gshj",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "bed_allotment",
+   "fieldtype": "Table",
+   "label": "Bed Allotment",
+   "options": "Daily Closing Table"
+  },
+  {
+   "fieldname": "online_amount",
+   "fieldtype": "Currency",
+   "label": "Online Amount",
+   "read_only": 1
+  },
+  {
+   "fieldname": "cash_amount",
+   "fieldtype": "Currency",
+   "label": "Cash Amount",
+   "read_only": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2026-02-16 18:00:54.660435",
+ "modified_by": "akashtomar8811@gmail.com",
+ "module": "Intern Test",
+ "name": "Ren Basera Daily Closing",
+ "naming_rule": "Expression",
+ "owner": "talaviyautsav2005@gmail.com",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
