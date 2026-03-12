@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ### Intern Test
 
 App for interns to test and learn frappe and its modules
@@ -39,3 +40,29 @@ This app can use GitHub Actions for CI. The following workflows are configured:
 ### License
 
 mit
+=======
+# RenBasera Frappe System
+
+A Ren Basera (Shelter Management) system built using the Frappe Framework.
+
+## Features
+- Floor and bed occupancy tracking
+- Check-in / Check-out management
+- Resident records
+- Delivery and dispatch logs
+- Custom DocTypes and APIs
+
+## Tech Stack
+- Frappe Framework
+- Python
+- MariaDB
+- JavaScript
+
+## Installation
+Clone the repository inside your frappe bench apps folder.
+
+git clone https://github.com/KaushalPawar14/RenBasera-Frappe-System.git
+
+bench get-app RenBasera-Frappe-System
+bench --site your-site-name install-app intern_test
+>>>>>>> 8dec760a51b409d1545cd14aed3553da9b116e85
