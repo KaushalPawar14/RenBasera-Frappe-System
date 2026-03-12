@@ -3,6 +3,18 @@
 
 App for interns to test and learn frappe and its modules
 
+## Screenshots
+
+### Workspace
+![Dashboard](screenshots/dashboard.png)
+
+### Dashboard-1
+![Occupancy](screenshots/occupancy.png)
+
+### Dashboard-2
+![Checkin](screenshots/checkin.png)
+
+
 ### Installation
 
 You can install this app using the [bench](https://github.com/frappe/bench) CLI:
@@ -13,34 +25,6 @@ bench get-app $URL_OF_THIS_REPO --branch develop
 bench install-app intern_test
 ```
 
-### Contributing
-
-This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
-
-```bash
-cd apps/intern_test
-pre-commit install
-```
-
-Pre-commit is configured to use the following tools for checking and formatting your code:
-
-- ruff
-- eslint
-- prettier
-- pyupgrade
-
-### CI
-
-This app can use GitHub Actions for CI. The following workflows are configured:
-
-- CI: Installs this app and runs unit tests on every push to `develop` branch.
-- Linters: Runs [Frappe Semgrep Rules](https://github.com/frappe/semgrep-rules) and [pip-audit](https://pypi.org/project/pip-audit/) on every pull request.
-
-
-### License
-
-mit
-=======
 # RenBasera Frappe System
 
 A Ren Basera (Shelter Management) system built using the Frappe Framework.
@@ -67,13 +51,3 @@ bench get-app RenBasera-Frappe-System
 bench --site your-site-name install-app intern_test
 >>>>>>> 8dec760a51b409d1545cd14aed3553da9b116e85
 
-## Screenshots
-
-### Workspace
-![Dashboard](screenshots/dashnoard.png)
-
-### Dashboard-1
-![Occupancy](screenshots/occupancy.png)
-
-### Dashboard-2
-![Checkin](screenshots/checkin.png)
