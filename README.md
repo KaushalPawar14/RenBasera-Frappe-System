@@ -70,10 +70,10 @@ bench --site your-site-name install-app intern_test
 ## Screenshots
 
 ### Workspace
-![Dashboard](screenshots/Screenshot 2026-03-12 173629.png)
+![Dashboard](screenshots/dashnoard.png)
 
 ### Dashboard-1
-![Occupancy](screenshots/Screenshot 2026-03-12 173704.png)
+![Occupancy](screenshots/occupancy.png)
 
 ### Dashboard-2
-![Checkin](screenshots/Screenshot 2026-03-12 173713.png)
+![Checkin](screenshots/checkin.png)
