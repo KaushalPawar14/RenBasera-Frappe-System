@@ -66,3 +66,14 @@ git clone https://github.com/KaushalPawar14/RenBasera-Frappe-System.git
 bench get-app RenBasera-Frappe-System
 bench --site your-site-name install-app intern_test
 >>>>>>> 8dec760a51b409d1545cd14aed3553da9b116e85
+
+## Screenshots
+
+### Workspace
+![Dashboard](screenshots/dashnoard.png)
+
+### Dashboard-1
+![Occupancy](screenshots/occupancy.png)
+
+### Dashboard-2
+![Checkin](screenshots/checkin.png)
