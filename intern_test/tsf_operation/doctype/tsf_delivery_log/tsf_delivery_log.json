@@ -1,0 +1,98 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "field:challan_ref",
+ "creation": "2026-02-18 16:15:09.168814",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "challan_ref",
+  "delivery_info",
+  "returning_info"
+ ],
+ "fields": [
+  {
+   "fieldname": "challan_ref",
+   "fieldtype": "Link",
+   "label": "Challan Ref",
+   "options": "TSF Dispatch Challan",
+   "unique": 1
+  },
+  {
+   "fieldname": "delivery_info",
+   "fieldtype": "Table",
+   "label": "Delivery Info",
+   "options": "TSF Delivery Log Item Table"
+  },
+  {
+   "depends_on": "eval: doc.workflow_state == \"Drop Completed\" || doc.workflow_state == \"Returning\" || doc.workflow_state == \"Completed\"\n",
+   "fieldname": "returning_info",
+   "fieldtype": "Table",
+   "label": "Returning Info",
+   "options": "TSF Return Trip Log Item Table"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "TSF Dispatch Challan",
+   "link_fieldname": "name"
+  }
+ ],
+ "modified": "2026-03-09 17:03:56.191583",
+ "modified_by": "thcoc460@gmail.com",
+ "module": "TSF Operation",
+ "name": "TSF Delivery Log",
+ "naming_rule": "By fieldname",
+ "owner": "thcoc460@gmail.com",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TSF Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TSF Driver",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TSF Security Guard",
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

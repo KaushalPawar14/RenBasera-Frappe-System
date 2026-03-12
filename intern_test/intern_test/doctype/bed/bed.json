@@ -44,14 +44,14 @@
    "fieldname": "floor",
    "fieldtype": "Select",
    "label": "Floor",
-   "options": "0\n1\n2\n3\n4\n5"
+   "options": "0\n1\n2\n3\n4\n5\n6\n7\n8"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-16 18:04:00.220107",
- "modified_by": "akashtomar8811@gmail.com",
+ "modified": "2026-03-05 12:21:42.134966",
+ "modified_by": "kaushalapawar@gmail.com",
  "module": "Intern Test",
  "name": "Bed",
  "naming_rule": "Expression",

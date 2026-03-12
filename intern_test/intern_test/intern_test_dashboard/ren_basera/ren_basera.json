@@ -1,0 +1,53 @@
+{
+ "cards": [
+  {
+   "card": "Available Beds"
+  },
+  {
+   "card": "Occupancy Rate"
+  },
+  {
+   "card": "Check-Ins Today"
+  },
+  {
+   "card": "Total Revenue"
+  }
+ ],
+ "charts": [
+  {
+   "width": "Half"
+  },
+  {
+   "chart": "Bed Bookings",
+   "width": "Half"
+  },
+  {
+   "chart": "Total Revenue",
+   "width": "Half"
+  },
+  {
+   "chart": "Floor Occupancy",
+   "width": "Full"
+  },
+  {
+   "chart": "Daily Bed Bookings",
+   "width": "Half"
+  },
+  {
+   "chart": "Daily Occupancy Rate",
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-03-10 11:24:33.020907",
+ "dashboard_name": "Ren Basera",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-03-11 13:03:37.722715",
+ "modified_by": "kaushalapawar@gmail.com",
+ "module": "Intern Test",
+ "name": "Ren Basera",
+ "owner": "kaushalapawar@gmail.com"
+}

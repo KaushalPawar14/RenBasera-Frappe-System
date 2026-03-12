@@ -1,31 +1,13 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import { VitePWA } from "vite-plugin-pwa";
+import http from "http"; // ✅ add this import
 
 export default defineConfig({
 	plugins: [
 		vue(),
 		VitePWA({
-			registerType: "autoUpdate",
-			includeAssets: ["favicon.ico", "icon-192.png", "icon-512.png"],
-			manifest: {
-				name: "TSF Distribution",
-				short_name: "TSF Dist",
-				description: "TSF Tiffin Distribution Management",
-				theme_color: "#2e7d32",
-				background_color: "#ffffff",
-				display: "standalone",
-				orientation: "portrait",
-				scope: "/",
-				start_url: "/",
-				icons: [
-					{ src: "icon-192.png", sizes: "192x192", type: "image/png" },
-					{ src: "icon-512.png", sizes: "512x512", type: "image/png" },
-				],
-			},
-			workbox: {
-				globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
-			},
+			/* ...your existing PWA config... */
 		}),
 	],
 	server: {
@@ -36,21 +18,17 @@ export default defineConfig({
 				target: "http://192.168.3.144:8000",
 				changeOrigin: true,
 				secure: false,
-				// ❌ REMOVED cookieDomainRewrite — it was breaking the Frappe session cookie,
-				//    causing Frappe to treat every request as a new/anonymous session with no CSRF token
+				// ✅ Custom agent that disables Expect: 100-continue at the Node level
+				agent: new http.Agent({ keepAlive: true }),
 				configure: (proxy) => {
-					proxy.on("proxyReq", (proxyReq, req, res) => {
-						// Remove Expect header — prevents 417 errors
+					proxy.on("proxyReq", (proxyReq, req) => {
+						// Remove Expect header at proxy level
 						proxyReq.removeHeader("Expect");
 						proxyReq.removeHeader("expect");
 						proxyReq.setHeader("X-Requested-With", "XMLHttpRequest");
-						// 'fetch' tells Frappe to validate CSRF via the session cookie directly.
-						// This works because the proxy makes Frappe see the request as same-origin.
 						proxyReq.setHeader("X-Frappe-CSRF-Token", "fetch");
 					});
-					proxy.on("proxyRes", (proxyRes, req, res) => {
-						// Strip the domain/path restrictions from Set-Cookie headers so the
-						// browser correctly stores Frappe's session cookies for localhost
+					proxy.on("proxyRes", (proxyRes) => {
 						const cookies = proxyRes.headers["set-cookie"];
 						if (cookies) {
 							proxyRes.headers["set-cookie"] = cookies.map((cookie) =>

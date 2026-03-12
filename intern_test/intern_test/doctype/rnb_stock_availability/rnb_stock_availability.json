@@ -1,32 +1,47 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "RNB-STK AVL-2026-.####",
  "creation": "2026-02-24 17:26:57.172184",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "item",
-  "quantity"
+  "total_purchased_qty",
+  "total_issued_qty",
+  "available_qty"
  ],
  "fields": [
   {
    "fieldname": "item",
-   "fieldtype": "Data",
-   "label": "Item"
+   "fieldtype": "Link",
+   "label": "Item",
+   "options": "RNB Stock"
   },
   {
-   "fieldname": "quantity",
+   "fieldname": "total_purchased_qty",
    "fieldtype": "Int",
-   "label": "Quantity"
+   "label": "Total Purchased Qty"
+  },
+  {
+   "fieldname": "total_issued_qty",
+   "fieldtype": "Int",
+   "label": "Total Issued Qty"
+  },
+  {
+   "fieldname": "available_qty",
+   "fieldtype": "Int",
+   "label": "Available Qty"
   }
  ],
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-02-25 11:30:30.002906",
- "modified_by": "Administrator",
+ "modified": "2026-03-05 16:25:40.166669",
+ "modified_by": "kaushalapawar@gmail.com",
  "module": "Intern Test",
  "name": "RNB Stock Availability",
+ "naming_rule": "Expression",
  "owner": "talaviyautsav2005@gmail.com",
  "permissions": [
   {

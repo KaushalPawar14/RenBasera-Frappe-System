@@ -292,7 +292,6 @@
 						}}
 					</span>
 				</div>
-				<!-- Live validation indicator -->
 				<div
 					v-if="checkForm.entered_odometer_reading !== '' && vehicleLastOdo !== null"
 					:class="['odo-match-badge', odoValid ? 'qty-ok' : 'qty-fail']"
@@ -305,6 +304,32 @@
 				</div>
 				<p v-if="validationErrors.entered_odometer_reading" class="field-error">
 					⚠️ {{ validationErrors.entered_odometer_reading }}
+				</p>
+			</div>
+
+			<!-- Dispatch Time -->
+			<div class="form-section">
+				<div class="section-title">🕐 Dispatch Time</div>
+				<div v-if="!checkForm.dispatch_time" class="time-unset">
+					<div class="time-unset-icon">⏱️</div>
+					<div class="time-unset-text">Dispatch time not recorded yet</div>
+					<button class="record-time-btn" @click="recordDispatchTime">
+						Record Time Now
+					</button>
+				</div>
+				<div v-else class="time-recorded">
+					<div class="time-recorded-top">
+						<div class="time-recorded-val">
+							{{ formatDispatchTime(checkForm.dispatch_time) }}
+						</div>
+						<button class="time-reset-btn" @click="checkForm.dispatch_time = ''">
+							✕ Reset
+						</button>
+					</div>
+					<div class="time-recorded-badge">✅ Time recorded</div>
+				</div>
+				<p v-if="validationErrors.dispatch_time" class="field-error">
+					⚠️ {{ validationErrors.dispatch_time }}
 				</p>
 			</div>
 
@@ -341,7 +366,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { apiGet, apiPut, listUrl } from "../utils/api.js";
 
@@ -369,6 +394,7 @@ const checkForm = ref({
 	checkpoint: "",
 	counted_qty: "",
 	entered_odometer_reading: "",
+	dispatch_time: "",
 	remarks: "",
 });
 
@@ -419,7 +445,8 @@ const canDispatch = computed(() => {
 		allVerified.value &&
 		checkForm.value.checkpoint &&
 		qtyMatches.value === true &&
-		odoValid.value === true
+		odoValid.value === true &&
+		!!checkForm.value.dispatch_time
 	);
 });
 
@@ -430,6 +457,23 @@ function formatDate(d) {
 		month: "short",
 		year: "numeric",
 	});
+}
+
+function formatDispatchTime(isoString) {
+	if (!isoString) return "—";
+	return new Date(isoString).toLocaleString("en-IN", {
+		day: "2-digit",
+		month: "short",
+		year: "numeric",
+		hour: "2-digit",
+		minute: "2-digit",
+		second: "2-digit",
+		hour12: true,
+	});
+}
+
+function recordDispatchTime() {
+	checkForm.value.dispatch_time = new Date().toISOString();
 }
 
 function getStatusClass(status) {
@@ -464,7 +508,6 @@ async function fetchChallanAndVehicle(challanRef) {
 	vehicleLastOdo.value = null;
 
 	try {
-		// Fetch Dispatch Challan
 		const challanRes = await apiGet(
 			`/api/resource/TSF Dispatch Challan/${challanRef}?fields=["total_tiffins_sent","vehicle"]`,
 		);
@@ -474,12 +517,10 @@ async function fetchChallanAndVehicle(challanRef) {
 			vehicle: cd.vehicle || null,
 		};
 
-		// Pre-fill counted_qty with expected (guard can adjust if mismatch)
 		if (cd.total_tiffins_sent !== null && cd.total_tiffins_sent !== undefined) {
 			checkForm.value.counted_qty = cd.total_tiffins_sent;
 		}
 
-		// Fetch Vehicle last odometer
 		if (cd.vehicle) {
 			const vehicleRes = await apiGet(
 				`/api/resource/TSF Vehicle/${cd.vehicle}?fields=["last_odometer_reading"]`,
@@ -504,6 +545,7 @@ function openCheckForm(check) {
 		checkpoint: "",
 		counted_qty: "",
 		entered_odometer_reading: "",
+		dispatch_time: "",
 		remarks: "",
 	};
 	validationErrors.value = {};
@@ -511,7 +553,6 @@ function openCheckForm(check) {
 	saveSuccess.value = "";
 	showForm.value = true;
 
-	// Load challan + vehicle data
 	fetchChallanAndVehicle(check.challan_ref);
 }
 
@@ -568,6 +609,10 @@ function validate(action) {
 		) {
 			errors.entered_odometer_reading = `Odometer (${checkForm.value.entered_odometer_reading} km) must be ≥ vehicle's last reading (${lastOdo} km).`;
 		}
+
+		if (!checkForm.value.dispatch_time) {
+			errors.dispatch_time = "Please record the dispatch time before submitting.";
+		}
 	}
 
 	validationErrors.value = errors;
@@ -592,6 +637,7 @@ async function triggerAction(action) {
 			checkpoint: checkForm.value.checkpoint,
 			counted_qty: checkForm.value.counted_qty,
 			entered_odometer_reading: parseInt(checkForm.value.entered_odometer_reading) || 0,
+			dispatch_time: action === "Verify" ? checkForm.value.dispatch_time : null,
 			remarks: checkForm.value.remarks,
 			workflow_state: newState,
 		});
@@ -1116,6 +1162,77 @@ input:checked + .toggle-slider:before {
 	font-weight: 700;
 	color: #1a4a1e;
 	font-family: "DM Mono", monospace;
+}
+
+/* Dispatch Time */
+.time-unset {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.65rem;
+	padding: 1rem 0 0.25rem;
+}
+.time-unset-icon {
+	font-size: 2.2rem;
+}
+.time-unset-text {
+	font-size: 0.82rem;
+	color: #aaa;
+	font-weight: 500;
+}
+.record-time-btn {
+	background: #1a4a1e;
+	color: white;
+	border: none;
+	border-radius: 12px;
+	padding: 0.78rem 1.75rem;
+	font-size: 0.9rem;
+	font-weight: 700;
+	cursor: pointer;
+	letter-spacing: 0.02em;
+	transition: opacity 0.2s;
+	font-family: "DM Sans", sans-serif;
+}
+.record-time-btn:active {
+	opacity: 0.8;
+}
+.time-recorded {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+.time-recorded-top {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	background: #f4f6f4;
+	border-radius: 10px;
+	padding: 0.75rem 1rem;
+}
+.time-recorded-val {
+	font-size: 0.9rem;
+	font-weight: 700;
+	color: #1a4a1e;
+	font-family: "DM Mono", monospace;
+}
+.time-reset-btn {
+	background: #ffebee;
+	color: #c62828;
+	border: none;
+	border-radius: 8px;
+	padding: 0.3rem 0.65rem;
+	font-size: 0.75rem;
+	font-weight: 700;
+	cursor: pointer;
+	font-family: "DM Sans", sans-serif;
+}
+.time-recorded-badge {
+	background: #e8f5e9;
+	color: #2e7d32;
+	border-radius: 10px;
+	padding: 0.45rem 0.75rem;
+	font-size: 0.8rem;
+	font-weight: 700;
 }
 
 /* Inputs */

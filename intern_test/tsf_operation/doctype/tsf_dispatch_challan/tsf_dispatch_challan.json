@@ -12,6 +12,7 @@
   "vehicle",
   "details_section",
   "boarded_items",
+  "column_break_melg",
   "center_list"
  ],
  "fields": [
@@ -59,6 +60,10 @@
    "fieldtype": "Int",
    "label": "Total Tiffins Sent",
    "reqd": 1
+  },
+  {
+   "fieldname": "column_break_melg",
+   "fieldtype": "Column Break"
   }
  ],
  "grid_page_length": 50,
@@ -81,8 +86,8 @@
    "link_fieldname": "challan_ref"
   }
  ],
- "modified": "2026-02-25 13:29:33.348938",
- "modified_by": "Administrator",
+ "modified": "2026-02-28 16:54:38.641922",
+ "modified_by": "jaypatel51895@gmail.com",
  "module": "TSF Operation",
  "name": "TSF Dispatch Challan",
  "naming_rule": "Expression",

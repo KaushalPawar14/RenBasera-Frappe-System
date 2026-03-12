@@ -5,18 +5,40 @@ import frappe
 from frappe.model.document import Document
 
 class TSFDispatchChallan(Document):
+    def validate(self):
+        # ---------------------------------------------------------
+        # VALIDATION: Prevent selecting 'On Trip' Driver/Vehicle
+        # ---------------------------------------------------------
+        if self.is_new():
+            if self.driver:
+                current_driver_status = frappe.db.get_value("TSF Driver", self.driver, "driver_status")
+                if current_driver_status == "On Trip":
+                    frappe.throw(f"Driver <b>{self.driver}</b> is currently 'On Trip' and cannot be selected.")
+
+            if self.vehicle:
+                current_vehicle_status = frappe.db.get_value("TSF Vehicle", self.vehicle, "vehicle_status")
+                if current_vehicle_status == "On Trip":
+                    frappe.throw(f"Vehicle <b>{self.vehicle}</b> is currently 'On Trip' and cannot be selected.")
+
     def on_update(self):
         before = self.get_doc_before_save()
         if not before:
             return
 
-        # Draft -> Pending Security Check
+        # Draft -> Pending Security Check (Create Security Record)
         if before.workflow_state == "Draft" and self.workflow_state == "Pending Security Check":
             self.create_security_record_if_missing()
+
+        # Any State -> Dispatched (Mark On Trip)
+        if before.workflow_state != "Dispatched" and self.workflow_state == "Dispatched":
             self.mark_driver_vehicle_onTrip()
 
-        # Any State -> Cancelled
-        if self.workflow_state == "Cancelled" and before.workflow_state != "Cancelled":
+        # Any State -> Completed (Mark Available)
+        if before.workflow_state != "Completed" and self.workflow_state == "Completed":
+            self.mark_driver_vehicle_available()
+
+        # Any State -> Cancelled (Mark Available)
+        if before.workflow_state != "Cancelled" and self.workflow_state == "Cancelled":
             self.mark_driver_vehicle_available()
 
     def create_security_record_if_missing(self):
@@ -28,7 +50,17 @@ class TSFDispatchChallan(Document):
         security_doc = frappe.get_doc({
             "doctype": "TSF Security Check",
             "challan_ref": self.name,
-            "checkpoint": "Gate Out",
+            "delivery_out":[
+
+                {
+                    "doctype":"TSF Security Check",
+                    "checkpoint":"Gate OUT",
+                    "qty_counted":None,
+                    "time":None,
+                    "entered_odometer_reading":-1
+
+                }
+            ]
         })
         
         security_doc.insert(ignore_permissions=True)
@@ -41,7 +73,6 @@ class TSFDispatchChallan(Document):
         vehicle_doc = frappe.get_doc("TSF Vehicle", self.vehicle)
         vehicle_doc.vehicle_status = "On Trip"
         vehicle_doc.save(ignore_permissions=True)
-        frappe.db.commit()
 
         if not self.driver:
             frappe.throw("Driver is not set.")
@@ -49,6 +80,8 @@ class TSFDispatchChallan(Document):
         driver_doc = frappe.get_doc("TSF Driver", self.driver)
         driver_doc.driver_status = "On Trip"
         driver_doc.save(ignore_permissions=True)
+        
+        frappe.db.commit()
 
     def mark_driver_vehicle_available(self):
         if self.vehicle:

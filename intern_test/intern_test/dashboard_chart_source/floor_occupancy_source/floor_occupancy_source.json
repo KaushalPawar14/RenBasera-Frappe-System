@@ -1,0 +1,13 @@
+{
+ "creation": "2026-03-10 12:59:04.641616",
+ "docstatus": 0,
+ "doctype": "Dashboard Chart Source",
+ "idx": 0,
+ "modified": "2026-03-10 12:59:04.641616",
+ "modified_by": "Administrator",
+ "module": "Intern Test",
+ "name": "Floor Occupancy Source",
+ "owner": "Administrator",
+ "source_name": "Floor Occupancy Source",
+ "timeseries": 1
+}

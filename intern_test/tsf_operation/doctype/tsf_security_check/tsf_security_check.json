@@ -7,11 +7,9 @@
  "engine": "InnoDB",
  "field_order": [
   "challan_ref",
-  "checkpoint",
-  "column_break_iaxn",
-  "counted_qty",
-  "time",
-  "entered_odometer_reading"
+  "section_break_hkcf",
+  "delivery_out",
+  "delivery_in"
  ],
  "fields": [
   {
@@ -22,31 +20,21 @@
    "unique": 1
   },
   {
-   "fieldname": "checkpoint",
-   "fieldtype": "Select",
-   "label": "Checkpoint",
-   "options": "Gate IN\nGate OUT"
+   "fieldname": "section_break_hkcf",
+   "fieldtype": "Section Break",
+   "label": "Trip Info"
   },
   {
-   "fetch_from": "challan_ref.total_tiffins_sent",
-   "fieldname": "counted_qty",
-   "fieldtype": "Int",
-   "label": "Counted Qty",
-   "read_only": 1
+   "fieldname": "delivery_out",
+   "fieldtype": "Table",
+   "label": "Delivery Out",
+   "options": "TSF Security Check Item Table"
   },
   {
-   "fieldname": "time",
-   "fieldtype": "Datetime",
-   "label": "Time"
-  },
-  {
-   "fieldname": "column_break_iaxn",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "entered_odometer_reading",
-   "fieldtype": "Int",
-   "label": "Entered Odometer Reading"
+   "fieldname": "delivery_in",
+   "fieldtype": "Table",
+   "label": "Delivery In ",
+   "options": "TSF Security Check Item Table"
   }
  ],
  "grid_page_length": 50,
@@ -57,7 +45,7 @@
    "link_fieldname": "name"
   }
  ],
- "modified": "2026-02-25 16:42:28.611183",
+ "modified": "2026-02-28 10:04:01.006072",
  "modified_by": "thcoc460@gmail.com",
  "module": "TSF Operation",
  "name": "TSF Security Check",
